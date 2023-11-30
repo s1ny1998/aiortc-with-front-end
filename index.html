@@ -1,0 +1,258 @@
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css">
+    <title>WebRTC demo</title>
+    <style>
+        /* button {
+            padding: 8px 16px;
+        }
+
+        pre {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        video {
+            width: 100%;
+        }
+
+        .option {
+            margin-bottom: 8px;
+        }
+
+        #media {
+            max-width: 1280px;
+        } */
+        body {
+            background-color: #131414;
+        }
+
+        #container {
+            max-width: 1024px;
+            margin: auto;
+        }
+
+        #monitor {
+            background: #000;
+            position: relative;
+            border-top: 3px solid #888;
+            margin: 5%;
+            padding: 2% 2% 4% 2%;
+            border-radius: 10px;
+            border-bottom-left-radius: 50% 2%;
+            border-bottom-right-radius: 50% 2%;
+            transition: margin-right 1s;
+        }
+
+        #monitor:after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: 3%;
+            left: 36%;
+            height: .5%;
+            width: 28%;
+            background: #ddd;
+            border-radius: 50%;
+            box-shadow: 0 0 3px 0 white;
+        }
+
+        video {
+            width: 100%;
+            margin-right: 10%;
+        }
+
+        #monitorscreen {
+            position: relative;
+            background-color: #0c0c0c;
+            background-size: cover;
+            background-position: top center;
+            height: 0;
+            padding-bottom: 56.25%;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        @media all and (min-width: 960px) {
+            #monitor {
+                -webkit-animation: tvflicker .2s infinite alternate;
+                -moz-animation: tvflicker .5s infinite alternate;
+                -o-animation: tvflicker .5s infinite alternate;
+                animation: tvflicker .5s infinite alternate;
+            }
+
+            @-webkit-keyframes tvflicker {
+                0% {
+                    box-shadow: 0 0 100px 0 rgba(200, 235, 255, 0.4);
+                }
+
+                100% {
+                    box-shadow: 0 0 95px 0 rgba(200, 230, 255, 0.45);
+                }
+            }
+
+            @-moz-keyframes tvflicker {
+                0% {
+                    box-shadow: 0 0 100px 0 rgba(225, 235, 255, 0.4);
+                }
+
+                100% {
+                    box-shadow: 0 0 60px 0 rgba(200, 220, 255, 0.6);
+                }
+            }
+
+            @-o-keyframes tvflicker {
+                0% {
+                    box-shadow: 0 0 100px 0 rgba(225, 235, 255, 0.4);
+                }
+
+                100% {
+                    box-shadow: 0 0 60px 0 rgba(200, 220, 255, 0.6);
+                }
+            }
+
+            @keyframes tvflicker {
+                0% {
+                    box-shadow: 0 0 100px 0 rgba(225, 235, 255, 0.4);
+                }
+
+                100% {
+                    box-shadow: 0 0 60px 0 rgba(200, 220, 255, 0.6);
+                }
+            }
+        }
+
+        .start {
+            background: hsl(340deg 100% 32%);
+            border-radius: 12px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            outline-offset: 4px;
+        }
+
+        .front {
+            display: block;
+            padding: 12px 42px;
+            border-radius: 12px;
+            font-size: 1.25rem;
+            background: hsl(345deg 100% 47%);
+            color: white;
+            transform: translateY(-6px);
+        }
+
+        .pushable:active .front {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <div id="monitor">
+            <div id="monitorscreen">
+                <div id="media" style="display: none">
+                    <h2 style="display: none;">Media</h2>
+                    <audio id="audio" autoplay="true"></audio>
+                    <video id="video" autoplay="true" playsinline="true"></video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <h2 style="display: none">Options</h2>
+    <div class="option" style="display: none;">
+        <input id="use-datachannel" checked="checked" type="checkbox" />
+        <label for="use-datachannel">Use datachannel</label>
+        <select id="datachannel-parameters">
+            <option value='{"ordered": true}'>Ordered, reliable</option>
+            <option value='{"ordered": false, "maxRetransmits": 0}'>Unordered, no retransmissions</option>
+            <option value='{"ordered": false, "maxPacketLifetime": 500}'>Unordered, 500ms lifetime</option>
+        </select>
+    </div>
+    <div class="option" style="display: none;">
+        <input id="use-audio" type="checkbox" />
+        <label for="use-audio">Use audio</label>
+        <select id="audio-codec">
+            <option value="default" selected>Default codecs</option>
+            <option value="opus/48000/2">Opus</option>
+            <option value="PCMU/8000">PCMU</option>
+            <option value="PCMA/8000">PCMA</option>
+        </select>
+    </div>
+    <div class="option" style="display: none">
+        <input id="use-video" checked="checked" type="checkbox" />
+        <label for="use-video">Use video</label>
+        <select id="video-resolution">
+            <option value="" selected>Default resolution</option>
+            <option value="320x240">320x240</option>
+            <option value="640x480">640x480</option>
+            <option value="960x540">960x540</option>
+            <option value="1280x720">1280x720</option>
+        </select>
+        <select id="video-transform">
+            <option value="none">No transform</option>
+            <option value="edges">Edge detection</option>
+            <option value="cartoon" selected>Sensitive info</option>
+            <option value="rotate">Rotate</option>
+        </select>
+        <select id="video-codec">
+            <option value="default" selected>Default codecs</option>
+            <option value="VP8/90000">VP8</option>
+            <option value="H264/90000">H264</option>
+        </select>
+    </div>
+    <div class="option" style="display: none;">
+        <input id="use-stun" type="checkbox" />
+        <label for="use-stun">Use STUN server</label>
+    </div>
+
+    <!-- <button id="start" onclick="start()">Start</button> -->
+    <button id="start" class="start" onclick="start()">
+        <span class="front">
+            Turn On
+        </span>
+    </button>
+    <button id="stop" class="start" style="display: none" onclick="stop()"><span class="front">
+            Turn off
+        </span></button>
+    <div style="display: none">
+        <h2>State</h2>
+        <p>
+            ICE gathering state: <span id="ice-gathering-state"></span>
+        </p>
+        <p>
+            ICE connection state: <span id="ice-connection-state"></span>
+        </p>
+        <p>
+            Signaling state: <span id="signaling-state"></span>
+        </p>
+
+
+    </div>
+
+
+    <h2 style="display: none">Data channel</h2>
+    <pre id="data-channel" style="height: 200px;display: none;"></pre>
+
+    <div style="display: none">
+        <h2>SDP</h2>
+
+        <h3>Offer</h3>
+        <pre id="offer-sdp"></pre>
+
+        <h3>Answer</h3>
+        <pre id="answer-sdp"></pre>
+    </div>
+
+
+    <script src="client.js"></script>
+</body>
+
+</html>
